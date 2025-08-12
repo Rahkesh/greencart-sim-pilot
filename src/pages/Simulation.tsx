@@ -10,13 +10,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Play, Loader2 } from 'lucide-react';
 import { StatsCard } from '@/components/Dashboard/StatsCard';
-import { Package, TrendingUp, Clock, Fuel, Users, Target } from 'lucide-react';
+import { Package, TrendingUp, Clock, Fuel, Users, Target, AlertTriangle, Gift } from 'lucide-react';
 import { useSimulation } from '@/hooks/useSimulation';
 
 const simulationSchema = z.object({
-  numberOfDrivers: z.number().min(1, 'Must have at least 1 driver').max(50, 'Cannot exceed 50 drivers'),
+  numberOfDrivers: z.number().min(1, 'Must have at least 1 driver').max(100, 'Cannot exceed 100 drivers'),
   routeStartTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format (HH:MM)'),
-  maxHoursPerDriver: z.number().min(1, 'Must be at least 1 hour').max(24, 'Cannot exceed 24 hours'),
+  maxHoursPerDriver: z.number().min(0.5, 'Must be at least 0.5 hours').max(24, 'Cannot exceed 24 hours'),
 });
 
 type SimulationForm = z.infer<typeof simulationSchema>;
@@ -58,7 +58,7 @@ const Simulation = () => {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Delivery Simulation</h1>
           <p className="text-muted-foreground">
-            Configure simulation parameters and analyze delivery operations performance
+            Configure simulation parameters and analyze delivery operations performance with company-specific rules
           </p>
         </div>
 
@@ -211,11 +211,12 @@ const Simulation = () => {
             <div>
               <h2 className="text-2xl font-bold tracking-tight">Simulation Results</h2>
               <p className="text-muted-foreground">
-                KPI analysis based on your simulation parameters
+                KPI analysis with company-specific rules and penalties
               </p>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {/* Primary KPIs */}
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               <StatsCard
                 title="Total Deliveries"
                 value={results.totalDeliveries.toString()}
@@ -225,12 +226,20 @@ const Simulation = () => {
                 variant="success"
               />
               <StatsCard
-                title="Total Revenue"
-                value={`₹${results.totalRevenue.toLocaleString()}`}
-                change="+8.3%"
-                changeType="positive"
+                title="Overall Profit"
+                value={`₹${results.overallProfit.toLocaleString()}`}
+                change={results.overallProfit > 0 ? "+15.2%" : "-8.5%"}
+                changeType={results.overallProfit > 0 ? "positive" : "negative"}
                 icon={TrendingUp}
-                variant="info"
+                variant={results.overallProfit > 0 ? "success" : "destructive"}
+              />
+              <StatsCard
+                title="Efficiency Score"
+                value={`${results.efficiencyScore}%`}
+                change={results.efficiencyScore > 80 ? "+5.2%" : "-3.1%"}
+                changeType={results.efficiencyScore > 80 ? "positive" : "negative"}
+                icon={Target}
+                variant={results.efficiencyScore > 80 ? "success" : "warning"}
               />
               <StatsCard
                 title="Driver Utilization"
@@ -239,6 +248,18 @@ const Simulation = () => {
                 changeType={results.driverUtilization > 80 ? "positive" : "negative"}
                 icon={Users}
                 variant="default"
+              />
+            </div>
+
+            {/* Secondary KPIs */}
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <StatsCard
+                title="Total Revenue"
+                value={`₹${results.totalRevenue.toLocaleString()}`}
+                change="+8.3%"
+                changeType="positive"
+                icon={TrendingUp}
+                variant="info"
               />
               <StatsCard
                 title="Avg Delivery Time"
@@ -266,11 +287,68 @@ const Simulation = () => {
               />
             </div>
 
+            {/* Company Rules Impact */}
             <Card>
               <CardHeader>
-                <CardTitle>Detailed Analysis</CardTitle>
+                <CardTitle>Company Rules Impact</CardTitle>
                 <CardDescription>
-                  Breakdown of simulation results and performance metrics
+                  Performance metrics based on proprietary company rules
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 md:grid-cols-3">
+                  <div className="flex items-center justify-between p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+                    <div className="flex items-center space-x-3">
+                      <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
+                      <div>
+                        <p className="text-sm font-medium text-red-900 dark:text-red-100">Late Penalties</p>
+                        <p className="text-xs text-red-600 dark:text-red-400">₹50 per late delivery</p>
+                      </div>
+                    </div>
+                    <span className="text-lg font-bold text-red-600 dark:text-red-400">
+                      ₹{results.totalPenalties.toLocaleString()}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                    <div className="flex items-center space-x-3">
+                      <Gift className="h-5 w-5 text-green-600 dark:text-green-400" />
+                      <div>
+                        <p className="text-sm font-medium text-green-900 dark:text-green-100">High-Value Bonuses</p>
+                        <p className="text-xs text-green-600 dark:text-green-400">10% for >₹1000 orders</p>
+                      </div>
+                    </div>
+                    <span className="text-lg font-bold text-green-600 dark:text-green-400">
+                      ₹{results.totalBonuses.toLocaleString()}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <div className="flex items-center space-x-3">
+                      <Target className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                      <div>
+                        <p className="text-sm font-medium text-blue-900 dark:text-blue-100">Net Impact</p>
+                        <p className="text-xs text-blue-600 dark:text-blue-400">Bonuses - Penalties</p>
+                      </div>
+                    </div>
+                    <span className={`text-lg font-bold ${
+                      (results.totalBonuses - results.totalPenalties) >= 0 
+                        ? 'text-green-600 dark:text-green-400' 
+                        : 'text-red-600 dark:text-red-400'
+                    }`}>
+                      ₹{(results.totalBonuses - results.totalPenalties).toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Detailed Analysis */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Detailed Financial Analysis</CardTitle>
+                <CardDescription>
+                  Complete breakdown of simulation results and financial impact
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -281,6 +359,10 @@ const Simulation = () => {
                       <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
                         <span className="text-sm font-medium">Total Deliveries</span>
                         <span className="text-sm font-bold">{results.totalDeliveries}</span>
+                      </div>
+                      <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                        <span className="text-sm font-medium">Efficiency Score</span>
+                        <span className="text-sm font-bold">{results.efficiencyScore}%</span>
                       </div>
                       <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
                         <span className="text-sm font-medium">Average Delivery Time</span>
@@ -303,17 +385,29 @@ const Simulation = () => {
                         <span className="text-sm font-medium">Total Revenue</span>
                         <span className="text-sm font-bold text-green-600">₹{results.totalRevenue.toLocaleString()}</span>
                       </div>
+                      <div className="flex justify-between items-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                        <span className="text-sm font-medium">Bonuses Earned</span>
+                        <span className="text-sm font-bold text-green-600">+₹{results.totalBonuses.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between items-center p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                        <span className="text-sm font-medium">Penalties Applied</span>
+                        <span className="text-sm font-bold text-red-600">-₹{results.totalPenalties.toLocaleString()}</span>
+                      </div>
                       <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
                         <span className="text-sm font-medium">Total Fuel Cost</span>
-                        <span className="text-sm font-bold text-red-600">₹{results.fuelCost.toLocaleString()}</span>
+                        <span className="text-sm font-bold text-red-600">-₹{results.fuelCost.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between items-center p-3 bg-success/10 rounded-lg border border-success/20">
+                        <span className="text-sm font-medium">Overall Profit</span>
+                        <span className={`text-sm font-bold ${
+                          results.overallProfit >= 0 ? 'text-success' : 'text-destructive'
+                        }`}>
+                          ₹{results.overallProfit.toLocaleString()}
+                        </span>
                       </div>
                       <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
                         <span className="text-sm font-medium">Cost per Delivery</span>
                         <span className="text-sm font-bold">₹{results.costPerDelivery.toLocaleString()}</span>
-                      </div>
-                      <div className="flex justify-between items-center p-3 bg-success/10 rounded-lg border border-success/20">
-                        <span className="text-sm font-medium">Net Profit</span>
-                        <span className="text-sm font-bold text-success">₹{(results.totalRevenue - results.fuelCost).toLocaleString()}</span>
                       </div>
                     </div>
                   </div>

@@ -17,6 +17,10 @@ export interface KPIResults {
   onTimeDeliveryRate: number;
   fuelCost: number;
   costPerDelivery: number;
+  totalPenalties: number;
+  totalBonuses: number;
+  overallProfit: number;
+  efficiencyScore: number;
 }
 
 export const useSimulation = () => {
@@ -27,28 +31,50 @@ export const useSimulation = () => {
   const runSimulation = async (request: SimulationRequest) => {
     setLoading(true);
     try {
+      console.log('Invoking simulation with request:', request);
+      
       const { data, error } = await supabase.functions.invoke('delivery-simulation', {
         body: request
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw error;
+      }
+
+      console.log('Simulation response:', data);
 
       if (data.error) {
-        throw new Error(data.error);
+        // Handle structured error responses from backend
+        const errorMessage = data.details 
+          ? `${data.error}: ${data.details}`
+          : data.error;
+        
+        throw new Error(errorMessage);
       }
 
       setResults(data.data);
       toast({
-        title: "Success",
-        description: "Simulation completed successfully",
+        title: "Simulation Completed",
+        description: `Successfully processed ${data.data.totalDeliveries} deliveries with ${data.data.efficiencyScore}% efficiency`,
       });
 
       return data.data;
     } catch (error) {
       console.error('Simulation error:', error);
+      
+      // Enhanced error handling with specific messages
+      let errorMessage = 'Failed to run simulation';
+      
+      if (error.message) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+
       toast({
-        title: "Error",
-        description: error.message || "Failed to run simulation",
+        title: "Simulation Failed",
+        description: errorMessage,
         variant: "destructive",
       });
       throw error;
