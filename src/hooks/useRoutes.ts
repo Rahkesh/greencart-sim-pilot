@@ -26,7 +26,14 @@ export const useRoutes = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setRoutes(data || []);
+      
+      // Type assertion to ensure traffic_level field matches our interface
+      const typedRoutes = (data || []).map(route => ({
+        ...route,
+        traffic_level: route.traffic_level as 'Low' | 'Medium' | 'High'
+      })) as Route[];
+      
+      setRoutes(typedRoutes);
     } catch (error) {
       console.error('Error fetching routes:', error);
       toast({
@@ -48,7 +55,13 @@ export const useRoutes = () => {
         .single();
 
       if (error) throw error;
-      setRoutes(prev => [data, ...prev]);
+      
+      const typedRoute = {
+        ...data,
+        traffic_level: data.traffic_level as 'Low' | 'Medium' | 'High'
+      } as Route;
+      
+      setRoutes(prev => [typedRoute, ...prev]);
       toast({
         title: "Success",
         description: "Route added successfully",
@@ -73,7 +86,13 @@ export const useRoutes = () => {
         .single();
 
       if (error) throw error;
-      setRoutes(prev => prev.map(route => route.id === id ? data : route));
+      
+      const typedRoute = {
+        ...data,
+        traffic_level: data.traffic_level as 'Low' | 'Medium' | 'High'
+      } as Route;
+      
+      setRoutes(prev => prev.map(route => route.id === id ? typedRoute : route));
       toast({
         title: "Success",
         description: "Route updated successfully",

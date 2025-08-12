@@ -27,7 +27,14 @@ export const useOrders = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setOrders(data || []);
+      
+      // Type assertion to ensure status field matches our interface
+      const typedOrders = (data || []).map(order => ({
+        ...order,
+        status: order.status as 'pending' | 'in-transit' | 'delivered' | 'delayed'
+      })) as Order[];
+      
+      setOrders(typedOrders);
     } catch (error) {
       console.error('Error fetching orders:', error);
       toast({
@@ -49,7 +56,13 @@ export const useOrders = () => {
         .single();
 
       if (error) throw error;
-      setOrders(prev => [data, ...prev]);
+      
+      const typedOrder = {
+        ...data,
+        status: data.status as 'pending' | 'in-transit' | 'delivered' | 'delayed'
+      } as Order;
+      
+      setOrders(prev => [typedOrder, ...prev]);
       toast({
         title: "Success",
         description: "Order added successfully",
@@ -74,7 +87,13 @@ export const useOrders = () => {
         .single();
 
       if (error) throw error;
-      setOrders(prev => prev.map(order => order.id === id ? data : order));
+      
+      const typedOrder = {
+        ...data,
+        status: data.status as 'pending' | 'in-transit' | 'delivered' | 'delayed'
+      } as Order;
+      
+      setOrders(prev => prev.map(order => order.id === id ? typedOrder : order));
       toast({
         title: "Success",
         description: "Order updated successfully",

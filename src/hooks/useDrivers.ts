@@ -26,7 +26,14 @@ export const useDrivers = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setDrivers(data || []);
+      
+      // Type assertion to ensure status field matches our interface
+      const typedDrivers = (data || []).map(driver => ({
+        ...driver,
+        status: driver.status as 'active' | 'inactive'
+      })) as Driver[];
+      
+      setDrivers(typedDrivers);
     } catch (error) {
       console.error('Error fetching drivers:', error);
       toast({
@@ -48,7 +55,13 @@ export const useDrivers = () => {
         .single();
 
       if (error) throw error;
-      setDrivers(prev => [data, ...prev]);
+      
+      const typedDriver = {
+        ...data,
+        status: data.status as 'active' | 'inactive'
+      } as Driver;
+      
+      setDrivers(prev => [typedDriver, ...prev]);
       toast({
         title: "Success",
         description: "Driver added successfully",
@@ -73,7 +86,13 @@ export const useDrivers = () => {
         .single();
 
       if (error) throw error;
-      setDrivers(prev => prev.map(driver => driver.id === id ? data : driver));
+      
+      const typedDriver = {
+        ...data,
+        status: data.status as 'active' | 'inactive'
+      } as Driver;
+      
+      setDrivers(prev => prev.map(driver => driver.id === id ? typedDriver : driver));
       toast({
         title: "Success",
         description: "Driver updated successfully",
