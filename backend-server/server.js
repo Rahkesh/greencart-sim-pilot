@@ -1,4 +1,3 @@
-
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -7,7 +6,8 @@ const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 8000;
+const HOST = '0.0.0.0'; // Bind to all interfaces for Railway
 
 // Supabase client setup
 const supabaseUrl = process.env.SUPABASE_URL || 'https://mprizxsrqmwstacyqerd.supabase.co';
@@ -267,11 +267,12 @@ app.use('*', (req, res) => {
   });
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`🚀 Delivery Optimization Backend Server running on port ${PORT}`);
-  console.log(`📊 Health check: http://localhost:${PORT}/health`);
-  console.log(`📚 API docs: http://localhost:${PORT}/api/docs`);
+// Start server with Railway-compatible configuration
+app.listen(PORT, HOST, () => {
+  console.log(`🚀 Delivery Optimization Backend Server running on ${HOST}:${PORT}`);
+  console.log(`📊 Health check: http://${HOST}:${PORT}/health`);
+  console.log(`📚 API docs: http://${HOST}:${PORT}/api/docs`);
+  console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
 });
 
 module.exports = app;
