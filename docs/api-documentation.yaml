@@ -1,0 +1,582 @@
+
+openapi: 3.0.3
+info:
+  title: Delivery Route Optimization & Simulation API
+  description: |
+    Comprehensive API for delivery route optimization and simulation platform.
+    This API enables delivery management companies to simulate operations, 
+    optimize routes, and analyze performance metrics.
+  version: 1.0.0
+  contact:
+    name: Delivery Optimization Team
+    email: api-support@delivery-optimization.com
+  license:
+    name: Proprietary
+    url: https://delivery-optimization.com/license
+
+servers:
+  - url: https://mprizxsrqmwstacyqerd.supabase.co/functions/v1
+    description: Production API Server
+  - url: https://mprizxsrqmwstacyqerd.supabase.co/rest/v1
+    description: Database REST API
+
+security:
+  - bearerAuth: []
+
+paths:
+  /delivery-simulation:
+    post:
+      tags:
+        - Simulation
+      summary: Run delivery simulation
+      description: |
+        Executes a comprehensive delivery simulation based on provided parameters.
+        Implements company business rules for penalties, bonuses, and fuel costs.
+      operationId: runDeliverySimulation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SimulationRequest'
+            examples:
+              basic_simulation:
+                summary: Basic simulation example
+                value:
+                  numberOfDrivers: 5
+                  routeStartTime: "09:00"
+                  maxHoursPerDriver: 8
+              peak_hours:
+                summary: Peak hours simulation
+                value:
+                  numberOfDrivers: 10
+                  routeStartTime: "17:00"
+                  maxHoursPerDriver: 6
+      responses:
+        '200':
+          description: Simulation completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimulationResponse'
+              examples:
+                successful_simulation:
+                  summary: Successful simulation result
+                  value:
+                    success: true
+                    data:
+                      totalDeliveries: 45
+                      totalRevenue: 38250.00
+                      averageDeliveryTime: 35
+                      driverUtilization: 87.50
+                      onTimeDeliveryRate: 91.11
+                      fuelCost: 8775.00
+                      costPerDelivery: 195.00
+                      totalPenalties: 200.00
+                      totalBonuses: 1350.00
+                      overallProfit: 30625.00
+                      efficiencyScore: 91.11
+                    metadata:
+                      simulationTimestamp: "2024-01-15T10:30:00.000Z"
+                      totalDriversAvailable: 5
+                      totalRoutesProcessed: 8
+                      totalOrdersProcessed: 45
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                validation_error:
+                  summary: Parameter validation error
+                  value:
+                    error: "Number of drivers must be greater than 0"
+                    code: "INVALID_RANGE"
+                    field: "numberOfDrivers"
+                insufficient_drivers:
+                  summary: Insufficient drivers available
+                  value:
+                    error: "Insufficient active drivers available"
+                    code: "INSUFFICIENT_DRIVERS"
+                    details: "Requested: 10, Available: 5"
+                    availableDrivers: 5
+                    requestedDrivers: 10
+        '401':
+          description: Unauthorized - Invalid or missing authentication
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /drivers:
+    get:
+      tags:
+        - Drivers
+      summary: Get all active drivers
+      description: Retrieve list of all active drivers available for delivery assignments
+      operationId: getDrivers
+      parameters:
+        - name: status
+          in: query
+          description: Filter drivers by status
+          schema:
+            type: string
+            enum: [active, inactive, on-leave]
+            default: active
+      responses:
+        '200':
+          description: List of drivers retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Driver'
+    post:
+      tags:
+        - Drivers
+      summary: Create new driver
+      description: Add a new driver to the system
+      operationId: createDriver
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDriverRequest'
+      responses:
+        '201':
+          description: Driver created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Driver'
+
+  /routes:
+    get:
+      tags:
+        - Routes
+      summary: Get all delivery routes
+      description: Retrieve list of all configured delivery routes
+      operationId: getRoutes
+      responses:
+        '200':
+          description: List of routes retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Route'
+    post:
+      tags:
+        - Routes
+      summary: Create new route
+      description: Add a new delivery route to the system
+      operationId: createRoute
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRouteRequest'
+      responses:
+        '201':
+          description: Route created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Route'
+
+  /orders:
+    get:
+      tags:
+        - Orders
+      summary: Get delivery orders
+      description: Retrieve list of delivery orders
+      operationId: getOrders
+      parameters:
+        - name: status
+          in: query
+          description: Filter orders by status
+          schema:
+            type: string
+            enum: [pending, in-transit, delivered, cancelled]
+      responses:
+        '200':
+          description: List of orders retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Order'
+
+  /simulation_results:
+    get:
+      tags:
+        - History
+      summary: Get simulation history
+      description: Retrieve past simulation results for the authenticated user
+      operationId: getSimulationHistory
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of results to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: offset
+          in: query
+          description: Number of results to skip
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Simulation history retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SimulationHistoryItem'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from Supabase authentication
+
+  schemas:
+    SimulationRequest:
+      type: object
+      required:
+        - numberOfDrivers
+        - routeStartTime
+        - maxHoursPerDriver
+      properties:
+        numberOfDrivers:
+          type: integer
+          minimum: 1
+          maximum: 100
+          description: Number of drivers to use in simulation
+          example: 5
+        routeStartTime:
+          type: string
+          pattern: '^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$'
+          description: Start time for routes in HH:MM format (24-hour)
+          example: "09:00"
+        maxHoursPerDriver:
+          type: number
+          minimum: 0.1
+          maximum: 24
+          description: Maximum hours each driver can work
+          example: 8
+
+    SimulationResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          $ref: '#/components/schemas/KPIResults'
+        metadata:
+          $ref: '#/components/schemas/SimulationMetadata'
+
+    KPIResults:
+      type: object
+      properties:
+        totalDeliveries:
+          type: integer
+          description: Total number of deliveries completed
+          example: 45
+        totalRevenue:
+          type: number
+          format: float
+          description: Total revenue generated (₹)
+          example: 38250.00
+        averageDeliveryTime:
+          type: integer
+          description: Average delivery time in minutes
+          example: 35
+        driverUtilization:
+          type: number
+          format: float
+          description: Driver utilization percentage
+          example: 87.50
+        onTimeDeliveryRate:
+          type: number
+          format: float
+          description: Percentage of on-time deliveries
+          example: 91.11
+        fuelCost:
+          type: number
+          format: float
+          description: Total fuel cost (₹)
+          example: 8775.00
+        costPerDelivery:
+          type: number
+          format: float
+          description: Average cost per delivery (₹)
+          example: 195.00
+        totalPenalties:
+          type: number
+          format: float
+          description: Total penalties applied (₹)
+          example: 200.00
+        totalBonuses:
+          type: number
+          format: float
+          description: Total bonuses earned (₹)
+          example: 1350.00
+        overallProfit:
+          type: number
+          format: float
+          description: Overall profit (₹)
+          example: 30625.00
+        efficiencyScore:
+          type: number
+          format: float
+          description: Overall efficiency score (%)
+          example: 91.11
+
+    SimulationMetadata:
+      type: object
+      properties:
+        simulationTimestamp:
+          type: string
+          format: date-time
+          description: When the simulation was executed
+          example: "2024-01-15T10:30:00.000Z"
+        totalDriversAvailable:
+          type: integer
+          description: Total drivers available for simulation
+          example: 5
+        totalRoutesProcessed:
+          type: integer
+          description: Number of routes processed
+          example: 8
+        totalOrdersProcessed:
+          type: integer
+          description: Number of orders processed
+          example: 45
+
+    Driver:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        name:
+          type: string
+          example: "John Doe"
+        phone:
+          type: string
+          example: "+1234567890"
+        past_seven_day_hours:
+          type: number
+          format: float
+          description: Hours worked in past 7 days
+          example: 42.5
+        status:
+          type: string
+          enum: [active, inactive, on-leave]
+          example: "active"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateDriverRequest:
+      type: object
+      required:
+        - name
+        - phone
+      properties:
+        name:
+          type: string
+          minLength: 2
+          example: "Jane Smith"
+        phone:
+          type: string
+          pattern: '^\+?[\d\s\-\(\)]{10,}$'
+          example: "+1987654321"
+        past_seven_day_hours:
+          type: number
+          minimum: 0
+          maximum: 168
+          default: 0
+          example: 35.5
+
+    Route:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        route_name:
+          type: string
+          example: "Downtown Express"
+        start_location:
+          type: string
+          example: "Warehouse A"
+        end_location:
+          type: string
+          example: "Business District"
+        distance_km:
+          type: number
+          format: float
+          example: 15.5
+        base_time_minutes:
+          type: integer
+          example: 30
+        traffic_level:
+          type: string
+          enum: [Low, Medium, High]
+          example: "Medium"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateRouteRequest:
+      type: object
+      required:
+        - route_name
+        - start_location
+        - end_location
+        - distance_km
+        - base_time_minutes
+        - traffic_level
+      properties:
+        route_name:
+          type: string
+          minLength: 3
+          example: "Suburban Route"
+        start_location:
+          type: string
+          example: "Warehouse B"
+        end_location:
+          type: string
+          example: "Suburban Area"
+        distance_km:
+          type: number
+          format: float
+          minimum: 0.1
+          example: 25.0
+        base_time_minutes:
+          type: integer
+          minimum: 1
+          example: 45
+        traffic_level:
+          type: string
+          enum: [Low, Medium, High]
+          example: "Low"
+
+    Order:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        customer_name:
+          type: string
+          example: "Alice Johnson"
+        delivery_address:
+          type: string
+          example: "456 Oak Street, City, State"
+        value_rs:
+          type: number
+          format: float
+          description: Order value in rupees
+          example: 1250.50
+        status:
+          type: string
+          enum: [pending, in-transit, delivered, cancelled]
+          example: "pending"
+        priority:
+          type: string
+          enum: [low, medium, high, urgent]
+          example: "high"
+        assigned_route:
+          type: string
+          format: uuid
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    SimulationHistoryItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        simulation_parameters:
+          $ref: '#/components/schemas/SimulationRequest'
+        results:
+          $ref: '#/components/schemas/KPIResults'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Human-readable error message
+          example: "Invalid request parameters"
+        code:
+          type: string
+          description: Machine-readable error code
+          example: "INVALID_RANGE"
+        field:
+          type: string
+          description: Field that caused the error (if applicable)
+          example: "numberOfDrivers"
+        details:
+          type: string
+          description: Additional error details
+          example: "Value must be between 1 and 100"
+        timestamp:
+          type: string
+          format: date-time
+          description: When the error occurred
+
+tags:
+  - name: Simulation
+    description: Delivery simulation operations
+  - name: Drivers
+    description: Driver management operations
+  - name: Routes
+    description: Route management operations
+  - name: Orders
+    description: Order management operations
+  - name: History
+    description: Simulation history operations
