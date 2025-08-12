@@ -231,7 +231,7 @@ const Simulation = () => {
                 change={results.overallProfit > 0 ? "+15.2%" : "-8.5%"}
                 changeType={results.overallProfit > 0 ? "positive" : "negative"}
                 icon={TrendingUp}
-                variant={results.overallProfit > 0 ? "success" : "destructive"}
+                variant={results.overallProfit > 0 ? "success" : "warning"}
               />
               <StatsCard
                 title="Efficiency Score"
