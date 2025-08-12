@@ -35,7 +35,14 @@ export const useSimulationHistory = () => {
         throw error;
       }
 
-      return data as SimulationHistoryItem[];
+      // Type cast the data to our expected format
+      return (data || []).map(item => ({
+        id: item.id,
+        simulation_parameters: item.simulation_parameters as SimulationRequest,
+        results: item.results as KPIResults,
+        created_at: item.created_at,
+        updated_at: item.updated_at
+      })) as SimulationHistoryItem[];
     },
   });
 
@@ -45,8 +52,8 @@ export const useSimulationHistory = () => {
       const { data, error } = await supabase
         .from('simulation_results')
         .insert({
-          simulation_parameters: parameters,
-          results: results,
+          simulation_parameters: parameters as any,
+          results: results as any,
         })
         .select()
         .single();
