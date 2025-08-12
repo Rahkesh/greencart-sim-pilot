@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useSimulationHistory } from '@/hooks/useSimulationHistory';
 
 export interface SimulationRequest {
   numberOfDrivers: number;
@@ -26,7 +27,9 @@ export interface KPIResults {
 export const useSimulation = () => {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<KPIResults | null>(null);
+  const [lastSimulationParams, setLastSimulationParams] = useState<SimulationRequest | null>(null);
   const { toast } = useToast();
+  const { saveSimulation } = useSimulationHistory();
 
   const runSimulation = async (request: SimulationRequest) => {
     setLoading(true);
@@ -54,6 +57,14 @@ export const useSimulation = () => {
       }
 
       setResults(data.data);
+      setLastSimulationParams(request);
+      
+      // Auto-save simulation results
+      saveSimulation({
+        parameters: request,
+        results: data.data
+      });
+
       toast({
         title: "Simulation Completed",
         description: `Successfully processed ${data.data.totalDeliveries} deliveries with ${data.data.efficiencyScore}% efficiency`,
@@ -87,6 +98,10 @@ export const useSimulation = () => {
     loading,
     results,
     runSimulation,
-    clearResults: () => setResults(null)
+    clearResults: () => {
+      setResults(null);
+      setLastSimulationParams(null);
+    },
+    lastSimulationParams
   };
 };

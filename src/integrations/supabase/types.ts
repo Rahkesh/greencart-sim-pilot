@@ -85,6 +85,36 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          first_name: string | null
+          id: string
+          last_name: string | null
+          role: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          first_name?: string | null
+          id: string
+          last_name?: string | null
+          role?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          role?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       routes: {
         Row: {
           base_time_minutes: number
@@ -112,6 +142,33 @@ export type Database = {
           route_id?: string
           traffic_level?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      simulation_results: {
+        Row: {
+          created_at: string
+          id: string
+          results: Json
+          simulation_parameters: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          results: Json
+          simulation_parameters: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          results?: Json
+          simulation_parameters?: Json
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
