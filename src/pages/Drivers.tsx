@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
@@ -13,64 +12,27 @@ import {
 } from '@/components/ui/table';
 import { DriverForm } from '@/components/Drivers/DriverForm';
 import { Plus, Edit, Trash2, Users } from 'lucide-react';
-
-interface Driver {
-  id: string;
-  name: string;
-  currentShiftHours: number;
-  pastSevenDayHours: number;
-  status: 'active' | 'inactive';
-}
+import { useDrivers, Driver } from '@/hooks/useDrivers';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const Drivers = () => {
-  const [drivers, setDrivers] = useState<Driver[]>([
-    {
-      id: '1',
-      name: 'John Smith',
-      currentShiftHours: 6.5,
-      pastSevenDayHours: 45.5,
-      status: 'active'
-    },
-    {
-      id: '2',
-      name: 'Sarah Johnson',
-      currentShiftHours: 8.0,
-      pastSevenDayHours: 52.0,
-      status: 'active'
-    },
-    {
-      id: '3',
-      name: 'Mike Wilson',
-      currentShiftHours: 0,
-      pastSevenDayHours: 38.5,
-      status: 'inactive'
-    }
-  ]);
-
+  const { drivers, loading, addDriver, updateDriver, deleteDriver } = useDrivers();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingDriver, setEditingDriver] = useState<Driver | undefined>();
 
-  const handleAddDriver = (driverData: Omit<Driver, 'id'>) => {
-    const newDriver: Driver = {
-      ...driverData,
-      id: Date.now().toString()
-    };
-    setDrivers([...drivers, newDriver]);
+  const handleAddDriver = (driverData: Omit<Driver, 'id' | 'created_at' | 'updated_at'>) => {
+    addDriver(driverData);
   };
 
-  const handleEditDriver = (driverData: Omit<Driver, 'id'>) => {
+  const handleEditDriver = (driverData: Omit<Driver, 'id' | 'created_at' | 'updated_at'>) => {
     if (editingDriver) {
-      setDrivers(drivers.map(driver => 
-        driver.id === editingDriver.id 
-          ? { ...driverData, id: editingDriver.id }
-          : driver
-      ));
+      updateDriver(editingDriver.id, driverData);
       setEditingDriver(undefined);
     }
   };
 
   const handleDeleteDriver = (id: string) => {
-    setDrivers(drivers.filter(driver => driver.id !== id));
+    deleteDriver(id);
   };
 
   const openEditForm = (driver: Driver) => {
@@ -83,8 +45,24 @@ const Drivers = () => {
     setEditingDriver(undefined);
   };
 
+  if (loading) {
+    return (
+      <Layout>
+        <div className="space-y-6">
+          <Skeleton className="h-8 w-64" />
+          <div className="grid gap-4 md:grid-cols-3">
+            {[...Array(3)].map((_, i) => (
+              <Skeleton key={i} className="h-24" />
+            ))}
+          </div>
+          <Skeleton className="h-96" />
+        </div>
+      </Layout>
+    );
+  }
+
   const activeDrivers = drivers.filter(d => d.status === 'active').length;
-  const totalHours = drivers.reduce((sum, d) => sum + d.currentShiftHours, 0);
+  const totalHours = drivers.reduce((sum, d) => sum + d.current_shift_hours, 0);
 
   return (
     <Layout>
@@ -153,8 +131,8 @@ const Drivers = () => {
                 {drivers.map((driver) => (
                   <TableRow key={driver.id}>
                     <TableCell className="font-medium">{driver.name}</TableCell>
-                    <TableCell>{driver.currentShiftHours}h</TableCell>
-                    <TableCell>{driver.pastSevenDayHours}h</TableCell>
+                    <TableCell>{driver.current_shift_hours}h</TableCell>
+                    <TableCell>{driver.past_seven_day_hours}h</TableCell>
                     <TableCell>
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                         driver.status === 'active' 

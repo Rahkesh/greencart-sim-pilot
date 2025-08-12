@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,33 +10,44 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-
-interface Driver {
-  id: string;
-  name: string;
-  currentShiftHours: number;
-  pastSevenDayHours: number;
-  status: 'active' | 'inactive';
-}
+import { Driver } from '@/hooks/useDrivers';
 
 interface DriverFormProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: Omit<Driver, 'id'>) => void;
+  onSubmit: (data: Omit<Driver, 'id' | 'created_at' | 'updated_at'>) => void;
   driver?: Driver;
 }
 
 export const DriverForm = ({ isOpen, onClose, onSubmit, driver }: DriverFormProps) => {
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<Omit<Driver, 'id'>>({
-    defaultValues: driver || {
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<Omit<Driver, 'id' | 'created_at' | 'updated_at'>>({
+    defaultValues: {
       name: '',
-      currentShiftHours: 0,
-      pastSevenDayHours: 0,
+      current_shift_hours: 0,
+      past_seven_day_hours: 0,
       status: 'active'
     }
   });
 
-  const onFormSubmit = (data: Omit<Driver, 'id'>) => {
+  useEffect(() => {
+    if (driver) {
+      reset({
+        name: driver.name,
+        current_shift_hours: driver.current_shift_hours,
+        past_seven_day_hours: driver.past_seven_day_hours,
+        status: driver.status
+      });
+    } else {
+      reset({
+        name: '',
+        current_shift_hours: 0,
+        past_seven_day_hours: 0,
+        status: 'active'
+      });
+    }
+  }, [driver, reset]);
+
+  const onFormSubmit = (data: Omit<Driver, 'id' | 'created_at' | 'updated_at'>) => {
     onSubmit(data);
     reset();
     onClose();
@@ -63,42 +73,42 @@ export const DriverForm = ({ isOpen, onClose, onSubmit, driver }: DriverFormProp
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="currentShiftHours">Current Shift Hours</Label>
+            <Label htmlFor="current_shift_hours">Current Shift Hours</Label>
             <Input
-              id="currentShiftHours"
+              id="current_shift_hours"
               type="number"
               step="0.1"
               min="0"
               max="24"
-              {...register('currentShiftHours', { 
+              {...register('current_shift_hours', { 
                 required: 'Current shift hours is required',
                 min: { value: 0, message: 'Hours cannot be negative' },
                 max: { value: 24, message: 'Hours cannot exceed 24' }
               })}
               placeholder="0.0"
             />
-            {errors.currentShiftHours && (
-              <p className="text-sm text-destructive">{errors.currentShiftHours.message}</p>
+            {errors.current_shift_hours && (
+              <p className="text-sm text-destructive">{errors.current_shift_hours.message}</p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="pastSevenDayHours">Past 7-Day Work Hours</Label>
+            <Label htmlFor="past_seven_day_hours">Past 7-Day Work Hours</Label>
             <Input
-              id="pastSevenDayHours"
+              id="past_seven_day_hours"
               type="number"
               step="0.1"
               min="0"
               max="168"
-              {...register('pastSevenDayHours', { 
+              {...register('past_seven_day_hours', { 
                 required: 'Past 7-day hours is required',
                 min: { value: 0, message: 'Hours cannot be negative' },
                 max: { value: 168, message: 'Hours cannot exceed 168 (7 * 24)' }
               })}
               placeholder="0.0"
             />
-            {errors.pastSevenDayHours && (
-              <p className="text-sm text-destructive">{errors.pastSevenDayHours.message}</p>
+            {errors.past_seven_day_hours && (
+              <p className="text-sm text-destructive">{errors.past_seven_day_hours.message}</p>
             )}
           </div>
 

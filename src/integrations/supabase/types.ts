@@ -14,7 +14,107 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      drivers: {
+        Row: {
+          created_at: string
+          current_shift_hours: number
+          id: string
+          name: string
+          past_seven_day_hours: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_shift_hours?: number
+          id?: string
+          name: string
+          past_seven_day_hours?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_shift_hours?: number
+          id?: string
+          name?: string
+          past_seven_day_hours?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      orders: {
+        Row: {
+          assigned_route: string
+          created_at: string
+          delivery_timestamp: string
+          id: string
+          order_id: string
+          status: string
+          updated_at: string
+          value_rs: number
+        }
+        Insert: {
+          assigned_route: string
+          created_at?: string
+          delivery_timestamp: string
+          id?: string
+          order_id: string
+          status?: string
+          updated_at?: string
+          value_rs: number
+        }
+        Update: {
+          assigned_route?: string
+          created_at?: string
+          delivery_timestamp?: string
+          id?: string
+          order_id?: string
+          status?: string
+          updated_at?: string
+          value_rs?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_assigned_route_fkey"
+            columns: ["assigned_route"]
+            isOneToOne: false
+            referencedRelation: "routes"
+            referencedColumns: ["route_id"]
+          },
+        ]
+      }
+      routes: {
+        Row: {
+          base_time_minutes: number
+          created_at: string
+          distance_km: number
+          id: string
+          route_id: string
+          traffic_level: string
+          updated_at: string
+        }
+        Insert: {
+          base_time_minutes: number
+          created_at?: string
+          distance_km: number
+          id?: string
+          route_id: string
+          traffic_level: string
+          updated_at?: string
+        }
+        Update: {
+          base_time_minutes?: number
+          created_at?: string
+          distance_km?: number
+          id?: string
+          route_id?: string
+          traffic_level?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
