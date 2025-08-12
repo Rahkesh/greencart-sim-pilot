@@ -315,7 +315,7 @@ const Simulation = () => {
                       <Gift className="h-5 w-5 text-green-600 dark:text-green-400" />
                       <div>
                         <p className="text-sm font-medium text-green-900 dark:text-green-100">High-Value Bonuses</p>
-                        <p className="text-xs text-green-600 dark:text-green-400">10% for >₹1000 orders</p>
+                        <p className="text-xs text-green-600 dark:text-green-400">10% for orders {'>'} ₹1000</p>
                       </div>
                     </div>
                     <span className="text-lg font-bold text-green-600 dark:text-green-400">
