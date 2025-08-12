@@ -15,6 +15,24 @@ This application is a comprehensive delivery route optimization and simulation p
 - **Order Management**: Handle delivery orders with status tracking
 - **Manager Authentication**: Secure access restricted to authorized managers only
 
+## Repository Structure
+
+```
+delivery-optimization-platform/
+├── frontend/               # React frontend application
+│   ├── src/               # React components, hooks, pages
+│   ├── public/            # Static assets
+│   ├── package.json       # Frontend dependencies
+│   └── vite.config.ts     # Vite configuration
+├── backend/               # Supabase Edge Functions backend
+│   ├── functions/         # Edge function implementations
+│   ├── supabase/          # Database migrations and config
+│   ├── docs/              # API documentation
+│   └── package.json       # Backend dependencies
+├── docs/                  # Project documentation
+└── README.md              # This file
+```
+
 ## Tech Stack Used
 
 ### Frontend
@@ -58,7 +76,7 @@ This application is a comprehensive delivery route optimization and simulation p
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd delivery-optimization-platform
+   cd delivery-optimization-platform/frontend
    ```
 
 2. **Install dependencies**
@@ -67,7 +85,7 @@ This application is a comprehensive delivery route optimization and simulation p
    ```
 
 3. **Environment Configuration**
-   Create a `.env.local` file in the root directory with the following variables:
+   Create a `.env.local` file in the frontend directory with the following variables:
    ```env
    VITE_SUPABASE_URL=your_supabase_project_url
    VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
@@ -90,46 +108,49 @@ This application is a comprehensive delivery route optimization and simulation p
 
 ### Backend Setup (Supabase Edge Functions)
 
-1. **Install Supabase CLI**
+1. **Navigate to backend directory**
+   ```bash
+   cd backend
+   ```
+
+2. **Install Supabase CLI**
    ```bash
    npm install -g supabase
    ```
 
-2. **Login to Supabase**
+3. **Login to Supabase**
    ```bash
    supabase login
    ```
 
-3. **Link to project**
+4. **Link to project**
    ```bash
    supabase link --project-ref mprizxsrqmwstacyqerd
    ```
 
-4. **Deploy Edge Functions**
+5. **Deploy Edge Functions**
    ```bash
    supabase functions deploy delivery-simulation
    ```
 
 ## Environment Variables
 
-### Required Environment Variables
+### Frontend Environment Variables (.env.local)
 ```env
 # Supabase Configuration
 VITE_SUPABASE_URL=your_supabase_project_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 
-# Edge Function Secrets (configured via Supabase Dashboard)
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-
 # Optional: Custom domain configuration
 VITE_SITE_URL=your_custom_domain_url
 ```
 
-### Local Development
-For local development, create a `.env.local` file:
+### Backend Environment Variables (Supabase Dashboard)
 ```env
-VITE_SUPABASE_URL=https://mprizxsrqmwstacyqerd.supabase.co
-VITE_SUPABASE_ANON_KEY=your_anon_key_here
+# Edge Function Secrets (configured via Supabase Dashboard)
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+SUPABASE_URL=your_supabase_project_url
+SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
 ## Deployment Instructions
@@ -142,9 +163,9 @@ VITE_SUPABASE_ANON_KEY=your_anon_key_here
 #### Manual Deployment Steps
 1. **Connect GitHub repository to Vercel**
 2. **Configure build settings:**
-   - Build Command: `npm run build`
-   - Output Directory: `dist`
-   - Install Command: `npm install`
+   - Build Command: `cd frontend && npm run build`
+   - Output Directory: `frontend/dist`
+   - Install Command: `cd frontend && npm install`
 
 3. **Environment Variables:**
    ```env
@@ -154,12 +175,6 @@ VITE_SUPABASE_ANON_KEY=your_anon_key_here
 
 4. **Deploy:**
    - Automatic deployment on push to main branch
-
-#### Alternative: Netlify Deployment
-1. **Connect GitHub repository to Netlify**
-2. **Build settings:**
-   - Build command: `npm run build`
-   - Publish directory: `dist`
 
 ### Backend Deployment (Supabase Edge Functions)
 
@@ -171,7 +186,7 @@ Backend is automatically deployed via Supabase Edge Functions:
    - Row Level Security policies enforced
 
 2. **Edge Functions:**
-   - Deployed via Supabase CLI
+   - Deployed via Supabase CLI from `/backend/functions`
    - Serverless compute with global edge locations
    - Automatic scaling and CORS handling
 
@@ -188,6 +203,22 @@ Database is cloud-hosted and managed by Supabase:
 - **Security:** TLS encryption, RLS policies
 - **Monitoring:** Built-in metrics and logging
 
+## Live Deployment Links
+
+### Frontend
+- **Production URL**: [https://greencart-sim-pilot-git-main-rahkeshs-projects.vercel.app](https://greencart-sim-pilot-git-main-rahkeshs-projects.vercel.app)
+- **GitHub Repository**: Connected via Lovable GitHub integration
+
+### Backend
+- **API Base URL**: `https://mprizxsrqmwstacyqerd.supabase.co/functions/v1/`
+- **Database**: `https://mprizxsrqmwstacyqerd.supabase.co`
+- **Auth**: `https://mprizxsrqmwstacyqerd.supabase.co/auth/v1`
+
+### Database
+- **Provider**: Supabase PostgreSQL
+- **Host**: Cloud-hosted on Supabase infrastructure
+- **Backups:** Automatic daily backups with point-in-time recovery
+
 ## API Documentation
 
 ### Live API Endpoints
@@ -197,10 +228,10 @@ Database is cloud-hosted and managed by Supabase:
 - **Database REST API**: `https://mprizxsrqmwstacyqerd.supabase.co/rest/v1/`
 - **Auth API**: `https://mprizxsrqmwstacyqerd.supabase.co/auth/v1/`
 
-### Swagger/OpenAPI Documentation
+### OpenAPI Specification
 
 Complete API documentation is available in OpenAPI 3.0 format:
-- **API Spec File**: [docs/api-documentation.yaml](./docs/api-documentation.yaml)
+- **API Spec File**: [backend/docs/api-spec.yaml](./backend/docs/api-spec.yaml)
 - **Interactive Docs**: Available via Swagger UI or Postman
 
 ### Authentication
@@ -341,12 +372,12 @@ Retrieve delivery orders
 ### Unit Tests
 The application includes comprehensive unit tests covering:
 
-1. **Authentication validation** (`src/__tests__/authValidation.test.ts`)
+1. **Authentication validation** (`frontend/src/__tests__/authValidation.test.ts`)
    - Email format validation
    - Password strength requirements
    - Manager role verification
 
-2. **Simulation business logic** (`src/__tests__/simulationLogic.test.ts`)
+2. **Simulation business logic** (`frontend/src/__tests__/simulationLogic.test.ts`)
    - Company rule implementations
    - Penalty calculations
    - Bonus calculations
@@ -355,7 +386,8 @@ The application includes comprehensive unit tests covering:
 
 ### Running Tests
 ```bash
-# Run all tests
+# Frontend tests
+cd frontend
 npm test
 
 # Run with coverage
@@ -369,42 +401,6 @@ npm run test:watch
 - Business logic: 100% coverage
 - Authentication flows: 100% coverage
 - Company rules implementation: 100% coverage
-
-## Live Deployment Links
-
-### Frontend
-- **Production URL**: [https://greencart-sim-pilot-git-main-rahkeshs-projects.vercel.app](https://greencart-sim-pilot-git-main-rahkeshs-projects.vercel.app)
-- **GitHub Repository**: Connected via Lovable GitHub integration
-
-### Backend
-- **API Base URL**: `https://mprizxsrqmwstacyqerd.supabase.co/functions/v1/`
-- **Database**: `https://mprizxsrqmwstacyqerd.supabase.co`
-- **Auth**: `https://mprizxsrqmwstacyqerd.supabase.co/auth/v1`
-
-### Database
-- **Provider**: Supabase PostgreSQL
-- **Host**: Cloud-hosted on Supabase infrastructure
-- **Backups**: Automatic daily backups with point-in-time recovery
-
-## Project Structure
-
-```
-delivery-optimization-platform/
-├── src/
-│   ├── components/         # React components
-│   ├── hooks/             # Custom React hooks
-│   ├── pages/             # Page components
-│   ├── integrations/      # Supabase integration
-│   ├── __tests__/         # Unit tests
-│   └── lib/               # Utility functions
-├── supabase/
-│   ├── functions/         # Edge functions
-│   └── migrations/        # Database migrations
-├── public/                # Static assets
-├── docs/                  # API documentation
-├── README.md              # Project documentation
-└── package.json           # Dependencies and scripts
-```
 
 ## Contributing
 

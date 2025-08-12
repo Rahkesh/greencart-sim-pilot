@@ -1,0 +1,29 @@
+
+project_id = "mprizxsrqmwstacyqerd"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[auth]
+enabled = true
+port = 54322
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["https://greencart-sim-pilot-git-main-rahkeshs-projects.vercel.app"]
+jwt_expiry = 3600
+refresh_token_rotation_enabled = true
+security_update_password_require_reauthentication = true
+
+[functions.delivery-simulation]
+verify_jwt = true
+
+[db]
+port = 54322
+major_version = 15
+
+[studio]
+enabled = true
+port = 54323

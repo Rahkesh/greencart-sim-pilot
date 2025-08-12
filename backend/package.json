@@ -1,0 +1,28 @@
+
+{
+  "name": "delivery-optimization-backend",
+  "version": "1.0.0",
+  "description": "Backend API for Delivery Optimization Platform using Supabase Edge Functions",
+  "main": "index.js",
+  "scripts": {
+    "deploy": "supabase functions deploy",
+    "serve": "supabase functions serve",
+    "test": "echo \"Backend tests run via Edge Functions\"",
+    "logs": "supabase functions logs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.55.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.2"
+  },
+  "author": "Delivery Management Team",
+  "license": "ISC",
+  "keywords": [
+    "delivery",
+    "optimization",
+    "supabase",
+    "edge-functions",
+    "api"
+  ]
+}
