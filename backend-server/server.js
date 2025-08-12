@@ -9,18 +9,29 @@ const app = express();
 const PORT = process.env.PORT || 8000;
 const HOST = '0.0.0.0'; // Bind to all interfaces for Railway
 
+console.log('🔧 Starting server initialization...');
+console.log('📝 Environment check:');
+console.log('- PORT:', PORT);
+console.log('- HOST:', HOST);
+console.log('- NODE_ENV:', process.env.NODE_ENV || 'development');
+
 // Supabase client setup
 const supabaseUrl = process.env.SUPABASE_URL || 'https://mprizxsrqmwstacyqerd.supabase.co';
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
+console.log('🔗 Supabase URL:', supabaseUrl);
+console.log('🔑 Supabase Service Key exists:', !!supabaseServiceKey);
+
 if (!supabaseServiceKey) {
-  console.error('SUPABASE_SERVICE_ROLE_KEY is required');
+  console.error('❌ SUPABASE_SERVICE_ROLE_KEY is required');
   process.exit(1);
 }
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
+console.log('✅ Supabase client initialized');
 
 // Middleware
+console.log('🛠️ Setting up middleware...');
 app.use(helmet());
 app.use(compression());
 app.use(cors({
@@ -33,6 +44,7 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+console.log('✅ Middleware configured');
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -268,11 +280,35 @@ app.use('*', (req, res) => {
 });
 
 // Start server with Railway-compatible configuration
-app.listen(PORT, HOST, () => {
+const server = app.listen(PORT, HOST, () => {
   console.log(`🚀 Delivery Optimization Backend Server running on ${HOST}:${PORT}`);
   console.log(`📊 Health check: http://${HOST}:${PORT}/health`);
   console.log(`📚 API docs: http://${HOST}:${PORT}/api/docs`);
   console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log('✅ Server startup complete!');
+});
+
+// Handle server errors
+server.on('error', (error) => {
+  console.error('❌ Server error:', error);
+  process.exit(1);
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('🛑 SIGTERM received, shutting down gracefully');
+  server.close(() => {
+    console.log('✅ Server closed');
+    process.exit(0);
+  });
+});
+
+process.on('SIGINT', () => {
+  console.log('🛑 SIGINT received, shutting down gracefully');
+  server.close(() => {
+    console.log('✅ Server closed');
+    process.exit(0);
+  });
 });
 
 module.exports = app;
