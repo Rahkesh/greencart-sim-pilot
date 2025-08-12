@@ -1,9 +1,8 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
@@ -11,71 +10,46 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Play, Loader2 } from 'lucide-react';
 import { StatsCard } from '@/components/Dashboard/StatsCard';
-import { Package, TrendingUp, Clock, Fuel } from 'lucide-react';
+import { Package, TrendingUp, Clock, Fuel, Users, Target } from 'lucide-react';
+import { useSimulation } from '@/hooks/useSimulation';
 
 const simulationSchema = z.object({
   numberOfDrivers: z.number().min(1, 'Must have at least 1 driver').max(50, 'Cannot exceed 50 drivers'),
-  startTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format (HH:MM)'),
-  maxHoursPerDay: z.number().min(1, 'Must be at least 1 hour').max(24, 'Cannot exceed 24 hours'),
+  routeStartTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format (HH:MM)'),
+  maxHoursPerDriver: z.number().min(1, 'Must be at least 1 hour').max(24, 'Cannot exceed 24 hours'),
 });
 
 type SimulationForm = z.infer<typeof simulationSchema>;
 
-interface SimulationResults {
-  totalProfit: number;
-  efficiencyScore: number;
-  onTimeDeliveries: number;
-  lateDeliveries: number;
-  totalFuelCost: number;
-  totalDeliveries: number;
-}
-
 const Simulation = () => {
-  const [isRunning, setIsRunning] = useState(false);
-  const [results, setResults] = useState<SimulationResults | null>(null);
+  const { loading, results, runSimulation, clearResults } = useSimulation();
 
   const form = useForm<SimulationForm>({
     resolver: zodResolver(simulationSchema),
     defaultValues: {
       numberOfDrivers: 5,
-      startTime: '09:00',
-      maxHoursPerDay: 8,
+      routeStartTime: '09:00',
+      maxHoursPerDriver: 8,
     },
   });
 
   const onSubmit = async (data: SimulationForm) => {
-    setIsRunning(true);
     console.log('Running simulation with data:', data);
     
     try {
-      // TODO: Replace with actual API call to backend
-      // const response = await fetch('/api/simulation', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(data),
-      // });
-      // const results = await response.json();
-      
-      // Mock simulation delay and results for now
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Mock results based on form inputs
-      const mockResults: SimulationResults = {
-        totalProfit: Math.round((data.numberOfDrivers * data.maxHoursPerDay * 150) + Math.random() * 1000),
-        efficiencyScore: Math.round(75 + Math.random() * 20),
-        onTimeDeliveries: Math.round(data.numberOfDrivers * data.maxHoursPerDay * 0.8),
-        lateDeliveries: Math.round(data.numberOfDrivers * data.maxHoursPerDay * 0.2),
-        totalFuelCost: Math.round(data.numberOfDrivers * data.maxHoursPerDay * 45),
-        totalDeliveries: Math.round(data.numberOfDrivers * data.maxHoursPerDay),
-      };
-      
-      setResults(mockResults);
+      await runSimulation({
+        numberOfDrivers: data.numberOfDrivers,
+        routeStartTime: data.routeStartTime,
+        maxHoursPerDriver: data.maxHoursPerDriver,
+      });
     } catch (error) {
       console.error('Simulation failed:', error);
-      // TODO: Add error handling/toast notification
-    } finally {
-      setIsRunning(false);
+      // Error handling is done in the useSimulation hook via toast
     }
+  };
+
+  const handleClearResults = () => {
+    clearResults();
   };
 
   return (
@@ -121,7 +95,7 @@ const Simulation = () => {
 
                   <FormField
                     control={form.control}
-                    name="startTime"
+                    name="routeStartTime"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Route Start Time</FormLabel>
@@ -139,7 +113,7 @@ const Simulation = () => {
 
                   <FormField
                     control={form.control}
-                    name="maxHoursPerDay"
+                    name="maxHoursPerDriver"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Max Hours per Driver per Day</FormLabel>
@@ -157,24 +131,36 @@ const Simulation = () => {
                     )}
                   />
 
-                  <Button 
-                    type="submit" 
-                    className="w-full" 
-                    disabled={isRunning}
-                    size="lg"
-                  >
-                    {isRunning ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Running Simulation...
-                      </>
-                    ) : (
-                      <>
-                        <Play className="w-4 h-4 mr-2" />
-                        Run Simulation
-                      </>
+                  <div className="flex gap-3">
+                    <Button 
+                      type="submit" 
+                      className="flex-1" 
+                      disabled={loading}
+                      size="lg"
+                    >
+                      {loading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Running Simulation...
+                        </>
+                      ) : (
+                        <>
+                          <Play className="w-4 h-4 mr-2" />
+                          Run Simulation
+                        </>
+                      )}
+                    </Button>
+                    {results && (
+                      <Button 
+                        type="button" 
+                        variant="outline"
+                        onClick={handleClearResults}
+                        disabled={loading}
+                      >
+                        Clear Results
+                      </Button>
                     )}
-                  </Button>
+                  </div>
                 </form>
               </Form>
             </CardContent>
@@ -199,19 +185,19 @@ const Simulation = () => {
                 <div className="flex justify-between">
                   <span className="text-sm font-medium">Start Time:</span>
                   <span className="text-sm text-muted-foreground">
-                    {form.watch('startTime')}
+                    {form.watch('routeStartTime')}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm font-medium">Max Hours/Day:</span>
                   <span className="text-sm text-muted-foreground">
-                    {form.watch('maxHoursPerDay')} hours
+                    {form.watch('maxHoursPerDriver')} hours
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm font-medium">Est. Total Hours:</span>
                   <span className="text-sm text-muted-foreground">
-                    {(form.watch('numberOfDrivers') || 0) * (form.watch('maxHoursPerDay') || 0)} hours
+                    {(form.watch('numberOfDrivers') || 0) * (form.watch('maxHoursPerDriver') || 0)} hours
                   </span>
                 </div>
               </div>
@@ -229,35 +215,51 @@ const Simulation = () => {
               </p>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               <StatsCard
-                title="Total Profit"
-                value={`₹${results.totalProfit.toLocaleString()}`}
+                title="Total Deliveries"
+                value={results.totalDeliveries.toString()}
                 change="+12.5%"
                 changeType="positive"
-                icon={TrendingUp}
+                icon={Package}
                 variant="success"
               />
               <StatsCard
-                title="Efficiency Score"
-                value={`${results.efficiencyScore}%`}
-                change="+5.2%"
+                title="Total Revenue"
+                value={`₹${results.totalRevenue.toLocaleString()}`}
+                change="+8.3%"
                 changeType="positive"
-                icon={Package}
+                icon={TrendingUp}
                 variant="info"
               />
               <StatsCard
-                title="On-Time Deliveries"
-                value={`${results.onTimeDeliveries}/${results.totalDeliveries}`}
-                change={`${Math.round((results.onTimeDeliveries / results.totalDeliveries) * 100)}%`}
-                changeType="positive"
-                icon={Clock}
+                title="Driver Utilization"
+                value={`${results.driverUtilization}%`}
+                change={results.driverUtilization > 80 ? "+5.2%" : "-2.1%"}
+                changeType={results.driverUtilization > 80 ? "positive" : "negative"}
+                icon={Users}
                 variant="default"
               />
               <StatsCard
+                title="Avg Delivery Time"
+                value={`${results.averageDeliveryTime} min`}
+                change="-3.5%"
+                changeType="positive"
+                icon={Clock}
+                variant="warning"
+              />
+              <StatsCard
+                title="On-Time Rate"
+                value={`${results.onTimeDeliveryRate}%`}
+                change={results.onTimeDeliveryRate > 90 ? "+2.1%" : "-1.8%"}
+                changeType={results.onTimeDeliveryRate > 90 ? "positive" : "negative"}
+                icon={Target}
+                variant="success"
+              />
+              <StatsCard
                 title="Total Fuel Cost"
-                value={`₹${results.totalFuelCost.toLocaleString()}`}
-                change="-8.1%"
+                value={`₹${results.fuelCost.toLocaleString()}`}
+                change="-4.2%"
                 changeType="positive"
                 icon={Fuel}
                 variant="warning"
@@ -268,25 +270,51 @@ const Simulation = () => {
               <CardHeader>
                 <CardTitle>Detailed Analysis</CardTitle>
                 <CardDescription>
-                  Breakdown of simulation results and recommendations
+                  Breakdown of simulation results and performance metrics
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <h4 className="font-semibold">Delivery Performance</h4>
-                    <div className="text-sm text-muted-foreground space-y-1">
-                      <p>• Total Deliveries: {results.totalDeliveries}</p>
-                      <p>• On-Time: {results.onTimeDeliveries} ({Math.round((results.onTimeDeliveries / results.totalDeliveries) * 100)}%)</p>
-                      <p>• Late: {results.lateDeliveries} ({Math.round((results.lateDeliveries / results.totalDeliveries) * 100)}%)</p>
+                <div className="grid gap-6 md:grid-cols-2">
+                  <div className="space-y-4">
+                    <h4 className="font-semibold text-lg">Performance Metrics</h4>
+                    <div className="grid gap-3">
+                      <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                        <span className="text-sm font-medium">Total Deliveries</span>
+                        <span className="text-sm font-bold">{results.totalDeliveries}</span>
+                      </div>
+                      <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                        <span className="text-sm font-medium">Average Delivery Time</span>
+                        <span className="text-sm font-bold">{results.averageDeliveryTime} minutes</span>
+                      </div>
+                      <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                        <span className="text-sm font-medium">Driver Utilization</span>
+                        <span className="text-sm font-bold">{results.driverUtilization}%</span>
+                      </div>
+                      <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                        <span className="text-sm font-medium">On-Time Delivery Rate</span>
+                        <span className="text-sm font-bold">{results.onTimeDeliveryRate}%</span>
+                      </div>
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <h4 className="font-semibold">Financial Summary</h4>
-                    <div className="text-sm text-muted-foreground space-y-1">
-                      <p>• Total Revenue: ₹{(results.totalProfit + results.totalFuelCost).toLocaleString()}</p>
-                      <p>• Fuel Costs: ₹{results.totalFuelCost.toLocaleString()}</p>
-                      <p>• Net Profit: ₹{results.totalProfit.toLocaleString()}</p>
+                  <div className="space-y-4">
+                    <h4 className="font-semibold text-lg">Financial Summary</h4>
+                    <div className="grid gap-3">
+                      <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                        <span className="text-sm font-medium">Total Revenue</span>
+                        <span className="text-sm font-bold text-green-600">₹{results.totalRevenue.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                        <span className="text-sm font-medium">Total Fuel Cost</span>
+                        <span className="text-sm font-bold text-red-600">₹{results.fuelCost.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                        <span className="text-sm font-medium">Cost per Delivery</span>
+                        <span className="text-sm font-bold">₹{results.costPerDelivery.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between items-center p-3 bg-success/10 rounded-lg border border-success/20">
+                        <span className="text-sm font-medium">Net Profit</span>
+                        <span className="text-sm font-bold text-success">₹{(results.totalRevenue - results.fuelCost).toLocaleString()}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
