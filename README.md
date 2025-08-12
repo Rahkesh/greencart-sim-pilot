@@ -23,11 +23,11 @@ This application is a comprehensive delivery route optimization and simulation p
 - **Status**: ✅ Live and Operational
 
 ### Backend Server (Traditional)
-- **API Base URL**: [Will be updated after Railway deployment]
+- **API Base URL**: [https://greencart-backend-production.up.railway.app](https://greencart-backend-production.up.railway.app)
 - **Platform**: Railway (Express.js/Node.js)
-- **API Documentation**: Available at `/api/docs` endpoint
-- **Health Check**: Available at `/health` endpoint
-- **Status**: 🚀 Ready for Deployment
+- **API Documentation**: [https://greencart-backend-production.up.railway.app/api/docs](https://greencart-backend-production.up.railway.app/api/docs)
+- **Health Check**: [https://greencart-backend-production.up.railway.app/health](https://greencart-backend-production.up.railway.app/health)
+- **Status**: ✅ Live and Operational
 
 ### Backend (Serverless)
 - **API Base URL**: `https://mprizxsrqmwstacyqerd.supabase.co/functions/v1/`
@@ -253,6 +253,10 @@ SUPABASE_ANON_KEY=your_supabase_anon_key
 
 ### Backend Server Deployment (Railway)
 
+#### Live Deployment
+- **Production URL**: [https://greencart-backend-production.up.railway.app](https://greencart-backend-production.up.railway.app)
+- **API Documentation**: [https://greencart-backend-production.up.railway.app/api/docs](https://greencart-backend-production.up.railway.app/api/docs)
+
 #### Deployment Steps
 1. **Connect GitHub repository to Railway**
 2. **Select the `backend-server` directory as the source**
@@ -298,14 +302,14 @@ Database is cloud-hosted and managed by Supabase:
 ### Live API Endpoints
 
 #### Traditional Backend Server (Railway)
-- **Base URL**: [Will be updated after Railway deployment]
-- **Health Check**: `GET /health`
-- **API Docs**: `GET /api/docs`
-- **Simulation**: `POST /api/delivery-simulation`
-- **Drivers**: `GET /api/drivers`, `POST /api/drivers`
-- **Routes**: `GET /api/routes`
-- **Orders**: `GET /api/orders`
-- **History**: `GET /api/simulation-history`
+- **Base URL**: [https://greencart-backend-production.up.railway.app](https://greencart-backend-production.up.railway.app)
+- **Health Check**: [https://greencart-backend-production.up.railway.app/health](https://greencart-backend-production.up.railway.app/health)
+- **API Docs**: [https://greencart-backend-production.up.railway.app/api/docs](https://greencart-backend-production.up.railway.app/api/docs)
+- **Simulation**: `POST https://greencart-backend-production.up.railway.app/api/delivery-simulation`
+- **Drivers**: `GET/POST https://greencart-backend-production.up.railway.app/api/drivers`
+- **Routes**: `GET https://greencart-backend-production.up.railway.app/api/routes`
+- **Orders**: `GET https://greencart-backend-production.up.railway.app/api/orders`
+- **History**: `GET https://greencart-backend-production.up.railway.app/api/simulation-history`
 
 #### Serverless Backend (Supabase)
 - **API Base URL**: `https://mprizxsrqmwstacyqerd.supabase.co/functions/v1/`
@@ -447,30 +451,28 @@ npm run test:watch
 
 ## Deployment Status Summary
 
-### ✅ **COMPLETED REQUIREMENTS**
+### ✅ **ALL REQUIREMENTS COMPLETED**
 
 1. **Frontend Deployment**: ✅ Vercel
-   - URL: https://greencart-sim-pilot-git-main-rahkeshs-projects.vercel.app
+   - URL: [https://greencart-sim-pilot-git-main-rahkeshs-projects.vercel.app](https://greencart-sim-pilot-git-main-rahkeshs-projects.vercel.app)
 
-2. **Backend Deployment**: ✅ Ready for Railway
-   - Traditional Express.js server created
-   - All endpoints implemented
-   - Ready for Railway deployment
+2. **Backend Deployment**: ✅ Railway (Express.js/Node.js)
+   - URL: [https://greencart-backend-production.up.railway.app](https://greencart-backend-production.up.railway.app)
+   - API Docs: [https://greencart-backend-production.up.railway.app/api/docs](https://greencart-backend-production.up.railway.app/api/docs)
 
 3. **Database**: ✅ Cloud-hosted PostgreSQL on Supabase
    - URL: https://mprizxsrqmwstacyqerd.supabase.co
 
-4. **Documentation**: ✅ All URLs listed in README
-   - Comprehensive API documentation
-   - Setup and deployment instructions
+4. **Documentation**: ✅ All URLs listed and active in README
 
-### 🚀 **NEXT STEPS**
+### 🎉 **DEPLOYMENT COMPLETE**
 
-To complete the Railway deployment:
-1. Push the `backend-server/` directory to your repository
-2. Connect the repository to Railway
-3. Set the required environment variables
-4. Update this README with the live Railway URL
+All deployment requirements have been successfully met:
+- ✅ Frontend hosted on Vercel
+- ✅ Backend hosted on Railway (as required)
+- ✅ Database cloud-hosted on Supabase PostgreSQL
+- ✅ All URLs clearly documented and active
+- ✅ API documentation accessible via public endpoint
 
 ## Contributing
 
@@ -488,3 +490,4 @@ This project is proprietary software for delivery management operations.
 ## Support
 
 For technical support or questions about the delivery optimization platform, please contact the development team or visit the [live application](https://greencart-sim-pilot-git-main-rahkeshs-projects.vercel.app).
+
