@@ -35,11 +35,11 @@ export const useSimulationHistory = () => {
         throw error;
       }
 
-      // Type cast the data to our expected format
+      // Type cast the data to our expected format with proper type conversion
       return (data || []).map(item => ({
         id: item.id,
-        simulation_parameters: item.simulation_parameters as SimulationRequest,
-        results: item.results as KPIResults,
+        simulation_parameters: item.simulation_parameters as unknown as SimulationRequest,
+        results: item.results as unknown as KPIResults,
         created_at: item.created_at,
         updated_at: item.updated_at
       })) as SimulationHistoryItem[];
@@ -49,9 +49,17 @@ export const useSimulationHistory = () => {
   // Save simulation result
   const saveSimulationMutation = useMutation({
     mutationFn: async ({ parameters, results }: { parameters: SimulationRequest; results: KPIResults }) => {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
       const { data, error } = await supabase
         .from('simulation_results')
         .insert({
+          user_id: user.id,
           simulation_parameters: parameters as any,
           results: results as any,
         })
