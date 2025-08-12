@@ -67,9 +67,11 @@ This application is a comprehensive delivery route optimization and simulation p
    ```
 
 3. **Environment Configuration**
-   The application uses Supabase for backend services. Environment variables are configured through Supabase:
-   - Supabase URL: `https://mprizxsrqmwstacyqerd.supabase.co`
-   - Supabase Anon Key: Configured in `src/integrations/supabase/client.ts`
+   Create a `.env.local` file in the root directory with the following variables:
+   ```env
+   VITE_SUPABASE_URL=your_supabase_project_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
 
 4. **Start development server**
    ```bash
@@ -110,28 +112,34 @@ This application is a comprehensive delivery route optimization and simulation p
 
 ## Environment Variables
 
-### Required Environment Variables (Supabase Secrets)
+### Required Environment Variables
 ```env
-# Supabase Configuration (automatically configured)
-SUPABASE_URL=your_supabase_project_url
-SUPABASE_ANON_KEY=your_supabase_anon_key
+# Supabase Configuration
+VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 
 # Edge Function Secrets (configured via Supabase Dashboard)
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+
+# Optional: Custom domain configuration
+VITE_SITE_URL=your_custom_domain_url
 ```
 
 ### Local Development
 For local development, create a `.env.local` file:
 ```env
-# Not required - using direct Supabase integration
-# All environment variables are managed through Supabase
+VITE_SUPABASE_URL=https://mprizxsrqmwstacyqerd.supabase.co
+VITE_SUPABASE_ANON_KEY=your_anon_key_here
 ```
 
 ## Deployment Instructions
 
-### Frontend Deployment (Vercel/Netlify)
+### Frontend Deployment (Vercel)
 
-#### Vercel Deployment
+#### Live Deployment
+- **Production URL**: [https://greencart-sim-pilot-git-main-rahkeshs-projects.vercel.app](https://greencart-sim-pilot-git-main-rahkeshs-projects.vercel.app)
+
+#### Manual Deployment Steps
 1. **Connect GitHub repository to Vercel**
 2. **Configure build settings:**
    - Build Command: `npm run build`
@@ -139,12 +147,15 @@ For local development, create a `.env.local` file:
    - Install Command: `npm install`
 
 3. **Environment Variables:**
-   - No additional environment variables needed (using direct Supabase URLs)
+   ```env
+   VITE_SUPABASE_URL=https://mprizxsrqmwstacyqerd.supabase.co
+   VITE_SUPABASE_ANON_KEY=your_anon_key
+   ```
 
 4. **Deploy:**
    - Automatic deployment on push to main branch
 
-#### Netlify Deployment
+#### Alternative: Netlify Deployment
 1. **Connect GitHub repository to Netlify**
 2. **Build settings:**
    - Build command: `npm run build`
@@ -179,23 +190,31 @@ Database is cloud-hosted and managed by Supabase:
 
 ## API Documentation
 
-### Base URL
-```
-https://mprizxsrqmwstacyqerd.supabase.co/functions/v1
-```
+### Live API Endpoints
+
+#### Base URLs
+- **API Base URL**: `https://mprizxsrqmwstacyqerd.supabase.co/functions/v1/`
+- **Database REST API**: `https://mprizxsrqmwstacyqerd.supabase.co/rest/v1/`
+- **Auth API**: `https://mprizxsrqmwstacyqerd.supabase.co/auth/v1/`
+
+### Swagger/OpenAPI Documentation
+
+Complete API documentation is available in OpenAPI 3.0 format:
+- **API Spec File**: [docs/api-documentation.yaml](./docs/api-documentation.yaml)
+- **Interactive Docs**: Available via Swagger UI or Postman
 
 ### Authentication
 All API requests require authentication via Supabase JWT token in the Authorization header:
-```
+```http
 Authorization: Bearer <jwt_token>
 ```
 
-### Endpoints
+### Key Endpoints
 
 #### POST /delivery-simulation
 Runs a delivery simulation with specified parameters.
 
-**Request Body:**
+**Example Request:**
 ```json
 {
   "numberOfDrivers": 5,
@@ -204,7 +223,7 @@ Runs a delivery simulation with specified parameters.
 }
 ```
 
-**Response (Success - 200):**
+**Example Response (Success - 200):**
 ```json
 {
   "success": true,
@@ -230,7 +249,7 @@ Runs a delivery simulation with specified parameters.
 }
 ```
 
-**Response (Error - 400):**
+**Example Response (Error - 400):**
 ```json
 {
   "error": "Validation error message",
@@ -239,32 +258,62 @@ Runs a delivery simulation with specified parameters.
 }
 ```
 
-**Request Validation:**
+#### GET /rest/v1/drivers
+Retrieve active drivers
+
+**Example Response:**
+```json
+[
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "name": "John Doe",
+    "phone": "+1234567890",
+    "past_seven_day_hours": 42.5,
+    "status": "active",
+    "created_at": "2024-01-15T10:30:00.000Z"
+  }
+]
+```
+
+#### GET /rest/v1/routes
+Retrieve delivery routes
+
+**Example Response:**
+```json
+[
+  {
+    "id": "route-uuid",
+    "route_name": "Downtown Express",
+    "start_location": "Warehouse A",
+    "end_location": "Business District",
+    "distance_km": 15.5,
+    "base_time_minutes": 30,
+    "traffic_level": "Medium"
+  }
+]
+```
+
+#### GET /rest/v1/orders
+Retrieve delivery orders
+
+**Example Response:**
+```json
+[
+  {
+    "id": "order-uuid",
+    "customer_name": "Alice Johnson",
+    "delivery_address": "456 Oak Street, City, State",
+    "value_rs": 1250.50,
+    "status": "pending",
+    "priority": "high"
+  }
+]
+```
+
+### Request Validation
 - `numberOfDrivers`: Integer, 1-100
 - `routeStartTime`: String, HH:MM format (24-hour)
 - `maxHoursPerDriver`: Number, 0.1-24
-
-#### Database Tables (Supabase API)
-
-**GET /rest/v1/drivers**
-Retrieve active drivers
-- Authentication required
-- RLS policies enforce user access
-
-**GET /rest/v1/routes**
-Retrieve delivery routes
-- Authentication required
-- Includes traffic level and distance data
-
-**GET /rest/v1/orders**
-Retrieve delivery orders
-- Authentication required
-- Status: pending, in-transit, completed
-
-**GET /rest/v1/simulation_results**
-Retrieve simulation history
-- Authentication required
-- User-specific results only
 
 ### Company Business Rules Implemented
 
@@ -324,18 +373,18 @@ npm run test:watch
 ## Live Deployment Links
 
 ### Frontend
-- **Production URL:** [To be deployed on Vercel/Netlify]
-- **Staging URL:** [Supabase staging domain]
+- **Production URL**: [https://greencart-sim-pilot-git-main-rahkeshs-projects.vercel.app](https://greencart-sim-pilot-git-main-rahkeshs-projects.vercel.app)
+- **GitHub Repository**: Connected via Lovable GitHub integration
 
 ### Backend
-- **API Base URL:** `https://mprizxsrqmwstacyqerd.supabase.co/functions/v1`
-- **Database:** `https://mprizxsrqmwstacyqerd.supabase.co`
-- **Auth:** `https://mprizxsrqmwstacyqerd.supabase.co/auth/v1`
+- **API Base URL**: `https://mprizxsrqmwstacyqerd.supabase.co/functions/v1/`
+- **Database**: `https://mprizxsrqmwstacyqerd.supabase.co`
+- **Auth**: `https://mprizxsrqmwstacyqerd.supabase.co/auth/v1`
 
 ### Database
-- **Provider:** Supabase PostgreSQL
-- **Host:** Cloud-hosted on Supabase infrastructure
-- **Backups:** Automatic daily backups with point-in-time recovery
+- **Provider**: Supabase PostgreSQL
+- **Host**: Cloud-hosted on Supabase infrastructure
+- **Backups**: Automatic daily backups with point-in-time recovery
 
 ## Project Structure
 
@@ -352,7 +401,9 @@ delivery-optimization-platform/
 │   ├── functions/         # Edge functions
 │   └── migrations/        # Database migrations
 ├── public/                # Static assets
-└── docs/                  # Additional documentation
+├── docs/                  # API documentation
+├── README.md              # Project documentation
+└── package.json           # Dependencies and scripts
 ```
 
 ## Contributing
@@ -370,4 +421,4 @@ This project is proprietary software for delivery management operations.
 
 ## Support
 
-For technical support or questions about the delivery optimization platform, please contact the development team.
+For technical support or questions about the delivery optimization platform, please contact the development team or visit the [live application](https://greencart-sim-pilot-git-main-rahkeshs-projects.vercel.app).
